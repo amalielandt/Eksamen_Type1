@@ -85,4 +85,29 @@ public class LoginEndpoint {
     return signedJWT.serialize();
 
   }
+  
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("create")
+  public Response createUser(String jsonString) throws AuthenticationException {
+    JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+    String username = json.get("username").getAsString();
+    String password = json.get("password").getAsString();
+
+    try {
+      USER_FACADE.createUser(username, password);
+      JsonObject responseJson = new JsonObject();
+      responseJson.addProperty("message", "Your user is now created");
+      return Response.ok(new Gson().toJson(responseJson)).build();
+
+    } catch (AuthenticationException ex) {
+      if (ex instanceof AuthenticationException) {
+        throw (AuthenticationException) ex;
+      }
+      Logger.getLogger(GenericExceptionMapper.class.getName()).log(Level.SEVERE, null, ex);
+      throw new AuthenticationException(ex.getMessage());
+    }
+    
+  }
 }
